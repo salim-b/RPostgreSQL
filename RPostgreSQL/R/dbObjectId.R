@@ -32,16 +32,16 @@ setAs("dbObjectId", "character",
 
 ## formating, showing, printing,...
 setMethod("format", "dbObjectId",
-          def = function(x, ...) {
+          definition = function(x, ...) {
               paste("(", paste(as(x, "integer"), collapse=","), ")", sep="")
           },
           valueClass = "character"
           )
 
-setMethod("show", "dbObjectId", def = function(object) print(object))
+setMethod("show", "dbObjectId", definition = function(object) print(object))
 
 setMethod("print", "dbObjectId",
-          def = function(x, ...){
+          definition = function(x, ...){
               expired <- if(isPostgresqlIdCurrent(x)) "" else "Expired "
               str <- paste("<", expired, class(x), ":", format(x), ">", sep="")
               cat(str, "\n")
