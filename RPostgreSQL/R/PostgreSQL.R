@@ -42,20 +42,20 @@ setAs("PostgreSQLObject", "PostgreSQLDriver",
       )
 
 setMethod("dbUnloadDriver", "PostgreSQLDriver",
-          def = function(drv, ...) postgresqlCloseDriver(drv, ...),
+          definition = function(drv, ...) postgresqlCloseDriver(drv, ...),
           valueClass = "logical"
           )
 
 setMethod("dbGetInfo", "PostgreSQLDriver",
-          def = function(dbObj, ...) postgresqlDriverInfo(dbObj, ...)
+          definition = function(dbObj, ...) postgresqlDriverInfo(dbObj, ...)
           )
 
 setMethod("dbListConnections", "PostgreSQLDriver",
-          def = function(drv, ...) dbGetInfo(drv, "connectionIds")[[1]]
+          definition = function(drv, ...) dbGetInfo(drv, "connectionIds")[[1]]
           )
 
 setMethod("summary", "PostgreSQLDriver",
-          def = function(object, ...) postgresqlDescribeDriver(object, ...)
+          definition = function(object, ...) postgresqlDescribeDriver(object, ...)
           )
 
 ##
@@ -64,47 +64,47 @@ setMethod("summary", "PostgreSQLDriver",
 setClass("PostgreSQLConnection", representation("DBIConnection", "PostgreSQLObject"))
 
 setMethod("dbConnect", "PostgreSQLDriver",
-          def = function(drv, ...) postgresqlNewConnection(drv, ...),
+          definition = function(drv, ...) postgresqlNewConnection(drv, ...),
           valueClass = "PostgreSQLConnection"
           )
 
 setMethod("dbConnect", "character",
-          def = function(drv, ...) postgresqlNewConnection(dbDriver(drv), ...),
+          definition = function(drv, ...) postgresqlNewConnection(dbDriver(drv), ...),
           valueClass = "PostgreSQLConnection"
           )
 
 ## clone a connection
 setMethod("dbConnect", "PostgreSQLConnection",
-          def = function(drv, ...) postgresqlCloneConnection(drv, ...),
+          definition = function(drv, ...) postgresqlCloneConnection(drv, ...),
           valueClass = "PostgreSQLConnection"
           )
 
 setMethod("dbDisconnect", "PostgreSQLConnection",
-          def = function(conn, ...) postgresqlCloseConnection(conn, ...),
+          definition = function(conn, ...) postgresqlCloseConnection(conn, ...),
           valueClass = "logical"
           )
 
 setGeneric("dbEscapeStrings", def = function(conn, string, ...) standardGeneric("dbEscapeStrings"))
 setMethod("dbEscapeStrings",
           signature(conn="PostgreSQLConnection", string="character"),
-          def = function(conn, string, ...) postgresqlEscapeStrings(conn, string, ...),
+          definition = function(conn, string, ...) postgresqlEscapeStrings(conn, string, ...),
           valueClass = "character"
           )
 
 setMethod("dbSendQuery",
           signature(conn = "PostgreSQLConnection", statement = "character"),
-          def = function(conn, statement,...) postgresqlExecStatement(conn, statement,...),
+          definition = function(conn, statement,...) postgresqlExecStatement(conn, statement,...),
           valueClass = "PostgreSQLResult"
           )
 
 
 setMethod("dbGetQuery",
           signature(conn = "PostgreSQLConnection", statement = "character"),
-          def = function(conn, statement, ...) postgresqlQuickSQL(conn, statement, ...)
+          definition = function(conn, statement, ...) postgresqlQuickSQL(conn, statement, ...)
           )
 
 setMethod("dbGetException", "PostgreSQLConnection",
-          def = function(conn, ...){
+          definition = function(conn, ...){
               if(!isPostgresqlIdCurrent(conn))
                   stop(paste("expired", class(conn)))
               .Call(RS_PostgreSQL_getException, as(conn, "integer"))
@@ -113,20 +113,20 @@ setMethod("dbGetException", "PostgreSQLConnection",
           )
 
 setMethod("dbGetInfo", "PostgreSQLConnection",
-          def = function(dbObj, ...) postgresqlConnectionInfo(dbObj, ...)
+          definition = function(dbObj, ...) postgresqlConnectionInfo(dbObj, ...)
           )
 
 setMethod("dbListResults", "PostgreSQLConnection",
-          def = function(conn, ...) dbGetInfo(conn, "rsId")[[1]]
+          definition = function(conn, ...) dbGetInfo(conn, "rsId")[[1]]
           )
 
 setMethod("summary", "PostgreSQLConnection",
-          def = function(object, ...) postgresqlDescribeConnection(object, ...)
+          definition = function(object, ...) postgresqlDescribeConnection(object, ...)
           )
 
 ## convenience methods
 setMethod("dbListTables", "PostgreSQLConnection",
-          def = function(conn, ...){
+          definition = function(conn, ...){
               out <- dbGetQuery(conn,
                                 paste("select tablename from pg_tables where schemaname !='information_schema'",
                                       "and schemaname !='pg_catalog'", ...))
@@ -140,13 +140,13 @@ setMethod("dbListTables", "PostgreSQLConnection",
           )
 
 setMethod("dbReadTable", signature(conn="PostgreSQLConnection", name="character"),
-          def = function(conn, name, ...) postgresqlReadTable(conn, name, ...),
+          definition = function(conn, name, ...) postgresqlReadTable(conn, name, ...),
           valueClass = "data.frame"
           )
 
 setMethod("dbWriteTable",
           signature(conn="PostgreSQLConnection", name="character", value="data.frame"),
-          def = function(conn, name, value, ...){
+          definition = function(conn, name, value, ...){
               postgresqlWriteTable(conn, name, value, ...)
           },
           valueClass = "logical"
@@ -155,7 +155,7 @@ setMethod("dbWriteTable",
 ## write table from filename (TODO: connections)
 setMethod("dbWriteTable",
           signature(conn="PostgreSQLConnection", name="character", value="character"),
-          def = function(conn, name, value, ...){
+          definition = function(conn, name, value, ...){
               postgresqlImportFile(conn, name, value, ...)
           },
           valueClass = "logical"
@@ -163,7 +163,7 @@ setMethod("dbWriteTable",
 
 setMethod("dbExistsTable",
           signature(conn="PostgreSQLConnection", name="character"),
-          def = function(conn, name, ...){
+          definition = function(conn, name, ...){
               qlength <- length(name)
               if(qlength == 1){
               currentschema <- dbGetQuery(conn, "SELECT current_schema()")
@@ -189,7 +189,7 @@ setMethod("dbExistsTable",
 
 setMethod("dbRemoveTable",
           signature(conn="PostgreSQLConnection", name="character"),
-          def = function(conn, name, ...){
+          definition = function(conn, name, ...){
               if(dbExistsTable(conn, name)){
                   rc <- try(dbGetQuery(conn, paste("DROP TABLE", postgresqlTableRef(name))))
                   !inherits(rc, ErrorClass)
@@ -201,7 +201,7 @@ setMethod("dbRemoveTable",
 
 setMethod("dbBegin",
           signature(conn="PostgreSQLConnection"),
-          def = function(conn,  ...){
+          definition = function(conn,  ...){
               rc <- try(dbGetQuery(conn, "BEGIN"))
               !inherits(rc, ErrorClass)
           },
@@ -209,7 +209,7 @@ setMethod("dbBegin",
           )
 setMethod("dbCommit",
           signature(conn="PostgreSQLConnection"),
-          def = function(conn,  ...){
+          definition = function(conn,  ...){
               rc <- try(dbGetQuery(conn, "COMMIT"))
               !inherits(rc, ErrorClass)
           },
@@ -217,7 +217,7 @@ setMethod("dbCommit",
           )
 setMethod("dbRollback",
           signature(conn="PostgreSQLConnection"),
-          def = function(conn,  ...){
+          definition = function(conn,  ...){
               rc <- try(dbGetQuery(conn, "ROLLBACK"))
               !inherits(rc, ErrorClass)
           },
@@ -227,7 +227,7 @@ setMethod("dbRollback",
 ## return field names (no metadata)
 setMethod("dbListFields",
           signature(conn="PostgreSQLConnection", name="character"),
-          def = function(conn, name, ...){
+          definition = function(conn, name, ...){
               qlength <- length(name)
               if(qlength == 1){
               currentschema <- dbGetQuery(conn, "SELECT current_schema()")
@@ -260,15 +260,15 @@ setMethod("dbListFields",
 
 
 setMethod("dbCallProc", "PostgreSQLConnection",
-          def = function(conn, ...) .NotYetImplemented()
+          definition = function(conn, ...) .NotYetImplemented()
           )
 
 setMethod("dbCommit", "PostgreSQLConnection",
-          def = function(conn, ...) postgresqlTransactionStatement(conn, "COMMIT")
+          definition = function(conn, ...) postgresqlTransactionStatement(conn, "COMMIT")
           )
 
 setMethod("dbRollback", "PostgreSQLConnection",
-          def = function(conn, ...) {
+          definition = function(conn, ...) {
               rsList <- dbListResults(conn)
               if (length(rsList))
                   dbClearResult(rsList[[1]])
@@ -290,12 +290,12 @@ setAs("PostgreSQLResult", "PostgreSQLDriver",
       )
 
 setMethod("dbClearResult", "PostgreSQLResult",
-          def = function(res, ...) postgresqlCloseResult(res, ...),
+          definition = function(res, ...) postgresqlCloseResult(res, ...),
           valueClass = "logical"
           )
 
 setMethod("fetch", signature(res="PostgreSQLResult", n="numeric"),
-          def = function(res, n, ...){
+          definition = function(res, n, ...){
               out <- postgresqlFetch(res, n, ...)
               if(is.null(out))
                   out <- data.frame(out)
@@ -306,7 +306,7 @@ setMethod("fetch", signature(res="PostgreSQLResult", n="numeric"),
 
 setMethod("fetch",
           signature(res="PostgreSQLResult", n="missing"),
-          def = function(res, n, ...){
+          definition = function(res, n, ...){
               out <-  postgresqlFetch(res, n=0, ...)
               if(is.null(out))
                   out <- data.frame(out)
@@ -316,12 +316,12 @@ setMethod("fetch",
           )
 
 setMethod("dbGetInfo", "PostgreSQLResult",
-          def = function(dbObj, ...) postgresqlResultInfo(dbObj, ...),
+          definition = function(dbObj, ...) postgresqlResultInfo(dbObj, ...),
           valueClass = "list"
           )
 
 setMethod("dbGetStatement", "PostgreSQLResult",
-          def = function(res, ...){
+          definition = function(res, ...){
               st <-  dbGetInfo(res, "statement")[[1]]
               if(is.null(st))
                   st <- character()
@@ -332,7 +332,7 @@ setMethod("dbGetStatement", "PostgreSQLResult",
 
 setMethod("dbListFields",
           signature(conn="PostgreSQLResult", name="missing"),
-          def = function(conn, name, ...){
+          definition = function(conn, name, ...){
               flds <- dbGetInfo(conn, "fields")$fields$name
               if(is.null(flds))
                   flds <- character()
@@ -342,27 +342,27 @@ setMethod("dbListFields",
           )
 
 setMethod("dbColumnInfo", "PostgreSQLResult",
-          def = function(res, ...) postgresqlDescribeFields(res, ...),
+          definition = function(res, ...) postgresqlDescribeFields(res, ...),
           valueClass = "data.frame"
           )
 
 setMethod("dbGetRowsAffected", "PostgreSQLResult",
-          def = function(res, ...) dbGetInfo(res, "rowsAffected")[[1]],
+          definition = function(res, ...) dbGetInfo(res, "rowsAffected")[[1]],
           valueClass = "numeric"
           )
 
 setMethod("dbGetRowCount", "PostgreSQLResult",
-          def = function(res, ...) dbGetInfo(res, "rowCount")[[1]],
+          definition = function(res, ...) dbGetInfo(res, "rowCount")[[1]],
           valueClass = "numeric"
           )
 
 setMethod("dbHasCompleted", "PostgreSQLResult",
-          def = function(res, ...) dbGetInfo(res, "completed")[[1]] == 1,
+          definition = function(res, ...) dbGetInfo(res, "completed")[[1]] == 1,
           valueClass = "logical"
           )
 
 setMethod("dbGetException", "PostgreSQLResult",
-          def = function(conn, ...){
+          definition = function(conn, ...){
               id <- as(conn, "integer")[1:2]
               .Call(RS_PostgreSQL_getException, id)
           },
@@ -370,14 +370,14 @@ setMethod("dbGetException", "PostgreSQLResult",
           )
 
 setMethod("summary", "PostgreSQLResult",
-          def = function(object, ...) postgresqlDescribeResult(object, ...)
+          definition = function(object, ...) postgresqlDescribeResult(object, ...)
           )
 
 
 
 setMethod("dbDataType",
           signature(dbObj = "PostgreSQLObject", obj = "ANY"),
-          def = function(dbObj, obj, ...) postgresqlDataType(obj, ...),
+          definition = function(dbObj, obj, ...) postgresqlDataType(obj, ...),
           valueClass = "character"
           )
 
@@ -385,20 +385,20 @@ setMethod("dbDataType",
 ## MODIFIED : -- sameer
 setMethod("make.db.names",
           signature(dbObj="PostgreSQLObject", snames = "character"),
-          def = function(dbObj, snames,keywords,unique, allow.keywords,...){
+          definition = function(dbObj, snames,keywords,unique, allow.keywords,...){
               postgresqlQuoteId(snames)
           },
           valueClass = "character"
           )
 
 setMethod("SQLKeywords", "PostgreSQLObject",
-          def = function(dbObj, ...) .PostgreSQLKeywords,
+          definition = function(dbObj, ...) .PostgreSQLKeywords,
           valueClass = "character"
           )
 
 setMethod("isSQLKeyword",
           signature(dbObj="PostgreSQLObject", name="character"),
-          def = function(dbObj, name,keywords,case, ...){
+          definition = function(dbObj, name,keywords,case, ...){
               isSQLKeyword.default(name, keywords = .PostgreSQLKeywords)
           },
           valueClass = "character"
@@ -406,7 +406,7 @@ setMethod("isSQLKeyword",
 ## extension to the DBI 0.1-4
 setGeneric("dbApply", def = function(res, ...) standardGeneric("dbApply"))
 setMethod("dbApply", "PostgreSQLResult",
-          def = function(res, ...)  postgresqlDBApply(res, ...),
+          definition = function(res, ...)  postgresqlDBApply(res, ...),
           )
 
 
